@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexum Faucet — Devnet SOL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07070f;
+      --surface: #0e0e1a;
+      --border: #1e1e30;
+      --purple: #7c3aed;
+      --purple-glow: rgba(124, 58, 237, 0.25);
+      --purple-light: #a78bfa;
+      --text: #f0eeff;
+      --muted: #6b6b8a;
+      --success: #34d399;
+      --error: #f87171;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background orb */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--purple-light);
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Card */
+    .card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Stat row */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      color: var(--purple-light);
+      font-weight: 700;
+    }
+
+    /* Input */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input::placeholder { color: var(--muted); }
+    input:focus { border-color: var(--purple); }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      color: #fff;
+      box-shadow: 0 0 24px var(--purple-glow);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 0 36px rgba(124,58,237,0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Status message */
+    .status {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .status.success {
+      display: block;
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--success);
+    }
+
+    .status.error {
+      display: block;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      color: var(--error);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Rules */
+    .rules {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rule {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .rule-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--purple);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    .footer {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    /* Success animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status.success, .status.error {
+      animation: fadeUp 0.3s ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">Nexum Protocol</span>
+    </div>
+    <h1>Devnet Faucet</h1>
+    <p class="subtitle">Claim 0.05 SOL devnet untuk mula testing.<br/>Satu claim per wallet.</p>
+  </div>
+
+  <div class="card">
+
+    <div class="stat-row">
+      <span class="stat-label">Amount per claim</span>
+      <span class="stat-value">0.05 SOL</span>
+    </div>
+
+    <div class="input-group">
+      <label for="wallet">Wallet Address (Devnet)</label>
+      <input
+        type="text"
+        id="wallet"
+        placeholder="Paste alamat wallet Phantom kamu..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <button class="btn btn-primary" id="claimBtn" onclick="handleClaim()">
+      Claim Devnet SOL
+    </button>
+
+    <div class="status" id="statusMsg"></div>
+
+    <div class="divider">Syarat</div>
+
+    <div class="rules">
+      <div class="rule"><div class="rule-dot"></div>Satu claim per wallet address</div>
+      <div class="rule"><div class="rule-dot"></div>Devnet sahaja — tiada nilai sebenar</div>
+      <div class="rule"><div class="rule-dot"></div>Beta tester Nexum Protocol sahaja</div>
+    </div>
+
+  </div>
+
+  <p class="footer">NEXUM PROTOCOL • BETA • DEVNET</p>
+
+</div>
+
+<script>
+  const FAUCET_API = '/api/faucet'; // akan point ke Vercel API route
+
+  async function handleClaim() {
+    const wallet = document.getElementById('wallet').value.trim();
+    const btn = document.getElementById('claimBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // Reset
+    statusMsg.className = 'status';
+    statusMsg.textContent = '';
+
+    if (!wallet) {
+      showStatus('error', '⚠️ Masukkan wallet address dulu.');
+      return;
+    }
+
+    if (wallet.length < 32 || wallet.length > 44) {
+      showStatus('error', '⚠️ Wallet address tidak sah.');
+      return;
+    }
+
+    // Loading state
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Processing...';
+
+    try {
+      const res = await fetch(FAUCET_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: wallet }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showStatus('success', `✅ Berjaya! 0.05 SOL devnet telah dihantar ke wallet kamu.\nSemak Phantom dalam beberapa saat.`);
+        btn.innerHTML = '✓ Claimed';
+        btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
+        btn.style.boxShadow = '0 0 24px rgba(5, 150, 105, 0.3)';
+        document.getElementById('wallet').disabled = true;
+      } else {
+        showStatus('error', `❌ ${data.error || 'Gagal. Cuba lagi.'}`);
+        btn.disabled = false;
+        btn.innerHTML = 'Claim Devnet SOL';
+      }
+    } catch (err) {
+      showStatus('error', '❌ Sambungan gagal. Cuba lagi.');
+      btn.disabled = false;
+      btn.innerHTML = 'Claim Devnet SOL';
+    }
+  }
+
+  function showStatus(type, message) {
+    const el = document.getElementById('statusMsg');
+    el.className = `status ${type}`;
+    el.textContent = message;
+  }
+
+  // Enter key support
+  document.getElementById('wallet').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleClaim();
+  });
+</script>
+
+</body>
+</html>

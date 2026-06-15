@@ -1,8 +1,8 @@
 {
   "name": "nexum-faucet",
   "version": "1.0.0",
-  "description": "Nexum Protocol Devnet Faucet",
+  "type": "module",
   "dependencies": {
-    "@solana/web3.js": "^1.91.8"
+    "@solana/web3.js": "1.87.6"
   }
 }
